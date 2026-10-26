@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F4F6F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0F1419" media="(prefers-color-scheme: dark)">
+  <title>SafeBite | Food Label Scanner</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314B8A6'/%3E%3Cpath d='M16 7l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10v-5z' fill='none' stroke='%230F1419' stroke-width='2.4' stroke-linejoin='round'/%3E%3Cpath d='M12.5 16l2.5 2.5 4.5-4.5' fill='none' stroke='%230F1419' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Nunito:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Barcode scanning library (reads UPC/EAN barcodes from the camera) -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- Lucide icons (pinned version: never use @latest, icon names can change) -->
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="brand">
+      <span class="brand-mark"><i data-lucide="shield-check" aria-hidden="true"></i></span>
+      <h1>SafeBite</h1>
+    </div>
+    <p class="tagline">Checks against your allergies and diet. Always double-check the package.</p>
+  </header>
+
+  <main id="main">
+    <!-- ================= SCAN SCREEN ================= -->
+    <section id="view-scan" aria-label="Scan">
+      <div class="card scan-card">
+        <button class="btn btn-primary btn-big" id="scanBtn">
+          <i data-lucide="scan-barcode" aria-hidden="true"></i> Scan a barcode
+        </button>
+        <button class="btn btn-secondary" id="stopBtn" hidden>
+          <i data-lucide="x" aria-hidden="true"></i> Stop camera
+        </button>
+        <div id="reader" aria-label="Camera view"></div>
+
+        <label class="field-label" for="codeInput">Or type the numbers under the barcode</label>
+        <div class="row">
+          <input id="codeInput" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 3017620422003">
+          <button class="btn btn-check" id="lookupBtn">Check</button>
+        </div>
+
+        <p id="profileHint" class="hint" hidden>
+          <i data-lucide="info" aria-hidden="true"></i>
+          <span>Add your allergies and diets in <a href="#" data-go="settings">Settings</a> to get a "Safe for you" check.</span>
+        </p>
+      </div>
+
+      <!-- Results get drawn in here by app.js -->
+      <div id="result" aria-live="polite"></div>
+    </section>
+
+    <!-- ================= HISTORY SCREEN ================= -->
+    <section id="view-history" hidden aria-labelledby="historyTitle">
+      <div class="card">
+        <h2 id="historyTitle">Scan history</h2>
+        <p class="muted">Your last 50 products, re-checked against your current profile. Tap one to see it again.</p>
+        <ul id="historyList" class="history"></ul>
+        <button class="btn btn-secondary" id="clearHistoryBtn">
+          <i data-lucide="trash-2" aria-hidden="true"></i> Clear history
+        </button>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS SCREEN ================= -->
+    <section id="view-settings" hidden aria-label="Settings">
+      <div class="card">
+        <h2 id="allergyTitle">My allergies</h2>
+        <p class="muted">Tap to select. Saved on this phone only.</p>
+        <div class="chips" id="allergyChips" role="group" aria-labelledby="allergyTitle"></div>
+      </div>
+      <div class="card">
+        <h2 id="dietTitle">My diets</h2>
+        <div class="chips" id="dietChips" role="group" aria-labelledby="dietTitle"></div>
+      </div>
+      <div class="card">
+        <h2>About</h2>
+        <p class="muted">Product data comes from <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>,
+        a free community database. It can be incomplete or out of date.
+        Always check the package label. SafeBite is a helper, not a guarantee, and not medical advice.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= BOTTOM TABS ================= -->
+  <nav class="tabs" aria-label="Main">
+    <div class="tabs-inner">
+      <button id="tab-scan" data-go="scan" class="active" aria-current="page">
+        <i data-lucide="scan-barcode" aria-hidden="true"></i>
+        <span>Scan</span>
+      </button>
+      <button id="tab-history" data-go="history">
+        <i data-lucide="history" aria-hidden="true"></i>
+        <span>History</span>
+      </button>
+      <button id="tab-settings" data-go="settings">
+        <i data-lucide="settings" aria-hidden="true"></i>
+        <span>Settings</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Load order matters: rules first, then the app -->
+  <script src="rules.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

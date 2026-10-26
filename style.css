@@ -1,0 +1,653 @@
+/* =====================================================================
+   style.css - SafeBite look and feel.
+   Every color lives in the tokens below: light values first, then dark.
+   Text/background pairs are chosen to pass WCAG AA in both themes.
+   ===================================================================== */
+
+/* ================== Color tokens: light ================== */
+:root {
+  color-scheme: light;
+
+  --bg: #F4F6F8;           /* page */
+  --card: #FFFFFF;         /* cards */
+  --card-inset: #F7F9FA;   /* rows, insets */
+  --border: #E2E7EC;       /* decorative card borders */
+  --control-border: #7D8894; /* input/toggle outlines: 3:1 against cards */
+  --text: #0F1419;
+  --muted: #4B5563;
+
+  --accent: #14B8A6;       /* calm teal: Scan button, active tab */
+  --accent-hover: #0D9488;
+  --on-accent: #0F1419;    /* text on teal (7.4:1) */
+  --accent-text: #0F766E;  /* teal used as text/icons on light surfaces */
+  --accent-soft: #E6FAF6;
+  --focus: #0D9488;
+
+  --safe: #15803D;     --safe-bg: #EFFCF3;     --safe-line: #9FE3B5;
+  --danger: #B91C1C;   --danger-bg: #FEF2F2;   --danger-line: #F8B4B4;
+  --caution: #92400E;  --caution-bg: #FFF8E6;  --caution-line: #F5D27A;
+  --unknown: #4B5563;  --unknown-bg: #F3F4F6;  --unknown-line: #CDD3DA;
+
+  --mark-bg: #FDE4E4;
+  --shadow: 0 1px 2px rgba(15, 20, 25, 0.04), 0 6px 20px rgba(15, 20, 25, 0.06);
+  --tab-bg: rgba(255, 255, 255, 0.94);
+
+  --radius: 16px;
+  --radius-sm: 12px;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-head: "Plus Jakarta Sans", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
+/* ================== Color tokens: dark (follows the phone setting) ================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg: #0F1419;
+    --card: #18212B;
+    --card-inset: #1E2833;
+    --border: #283441;
+    --control-border: #6E7C8C;
+    --text: #E8EDF2;
+    --muted: #A7B3C0;
+
+    --accent: #14B8A6;
+    --accent-hover: #2DD4BF;
+    --on-accent: #0F1419;
+    --accent-text: #2DD4BF;
+    --accent-soft: rgba(45, 212, 191, 0.14);
+    --focus: #2DD4BF;
+
+    /* lighter shades so status text stays readable on dark cards */
+    --safe: #5EE08F;     --safe-bg: rgba(74, 222, 128, 0.10);   --safe-line: rgba(74, 222, 128, 0.35);
+    --danger: #FCA5A5;   --danger-bg: rgba(248, 113, 113, 0.12); --danger-line: rgba(248, 113, 113, 0.40);
+    --caution: #FCD34D;  --caution-bg: rgba(252, 211, 77, 0.10);  --caution-line: rgba(252, 211, 77, 0.38);
+    --unknown: #B6C0CC;  --unknown-bg: rgba(182, 192, 204, 0.10); --unknown-line: rgba(182, 192, 204, 0.32);
+
+    --mark-bg: rgba(248, 113, 113, 0.20);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --tab-bg: rgba(24, 33, 43, 0.96);
+  }
+}
+
+/* ================== Base ================== */
+* { box-sizing: border-box; }
+html { font-size: 17px; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px calc(104px + env(safe-area-inset-bottom, 0px));
+}
+h1, h2 { font-family: var(--font-head); color: var(--text); }
+h2 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+p { margin: 0 0 8px; }
+p:last-child { margin-bottom: 0; }
+a {
+  color: var(--accent-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.muted { color: var(--muted); font-size: 0.92rem; }
+.mono { font-family: var(--font-mono); font-size: 0.92em; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -100px;
+  z-index: 20;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--text);
+}
+.skip-link:focus { top: calc(8px + env(safe-area-inset-top, 0px)); }
+
+/* One visible focus style for everything you can tab to */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Lucide icon sizing */
+.lucide {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.25;
+  flex: none;
+}
+
+/* ================== Header ================== */
+.top {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px 14px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand-mark .lucide { width: 22px; height: 22px; }
+.top h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.tagline {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* ================== Cards ================== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-top: 14px;
+}
+
+/* ================== Buttons & input ================== */
+.btn {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 800;
+  min-height: 48px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.btn:active { transform: scale(0.985); }
+.btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-big {
+  width: 100%;
+  min-height: 60px;
+  font-size: 1.12rem;
+  border-radius: var(--radius);
+}
+.btn-big .lucide { width: 24px; height: 24px; }
+.btn-secondary {
+  width: 100%;
+  margin-top: 12px;
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--control-border);
+}
+.btn-secondary:hover { background: var(--card-inset); }
+.btn-check {
+  background: var(--text);
+  color: var(--card);
+  padding: 0 22px;
+}
+
+.field-label {
+  display: block;
+  margin-top: 18px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.row input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--control-border);
+  background: var(--card);
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.row input::placeholder { color: var(--muted); opacity: 1; }
+.row input:focus,
+.row input:focus-visible {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--focus);
+}
+
+.hint {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  font-size: 0.92rem;
+}
+.hint .lucide { color: var(--accent-text); margin-top: 2px; }
+
+#reader {
+  margin-top: 14px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+#reader:empty { display: none; }
+
+/* ================== Status system ==================
+   safe = green check, caution = amber alert (may contain only),
+   unsafe = red X, unknown = gray question. Always icon + words. */
+.status-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--line);
+  background: var(--tint);
+  color: var(--text);
+}
+.status-card.big {
+  margin-top: 18px;
+  padding: 20px;
+}
+.status-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tone);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+}
+.status-icon .lucide { width: 26px; height: 26px; stroke-width: 2.5; }
+.status-card.big .status-icon { width: 52px; height: 52px; }
+.status-card.big .status-icon .lucide { width: 30px; height: 30px; }
+.status-title {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  color: var(--tone);
+  margin-top: 2px;
+}
+.status-card.big .status-title { font-size: 1.5rem; letter-spacing: -0.02em; margin-top: 8px; }
+.status-card ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  font-weight: 600;
+}
+.status-card li + li { margin-top: 2px; }
+.status-card p { margin-top: 6px; }
+.status-card + .muted { margin-top: 14px; }
+
+/* each status sets its tone, tint and line */
+.safe    { --tone: var(--safe);    --tint: var(--safe-bg);    --line: var(--safe-line); }
+.unsafe  { --tone: var(--danger);  --tint: var(--danger-bg);  --line: var(--danger-line); }
+.caution { --tone: var(--caution); --tint: var(--caution-bg); --line: var(--caution-line); }
+.unknown,
+.none    { --tone: var(--unknown); --tint: var(--unknown-bg); --line: var(--unknown-line); }
+
+/* small status label used in rows and history */
+.pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--tint);
+  color: var(--tone);
+  font-weight: 800;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.pill .lucide { width: 16px; height: 16px; stroke-width: 2.5; }
+
+/* ================== Product ================== */
+.product {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.product img,
+.product .noimg {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  flex: none;
+}
+.noimg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+.product .noimg { background: var(--card-inset); }
+.product-info { min-width: 0; }
+.product .name {
+  font-size: 1.25rem;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.product .brand { color: var(--muted); margin-top: 2px; }
+.product .barcode {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ================== Allergen & diet check rows ================== */
+.checks {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.checks > .check-row:first-child { border-top: 0; }
+.check-main { min-width: 0; }
+.check-name {
+  display: block;
+  font-weight: 700;
+}
+.check-reason {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-top: 1px;
+  overflow-wrap: anywhere;
+}
+.mine-tag {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+  vertical-align: 1px;
+}
+
+.more { margin-top: 6px; }
+.more summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 700;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+.more summary::-webkit-details-marker { display: none; }
+.more summary::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  margin: 0 4px 0 2px;
+}
+.more[open] summary::before { transform: rotate(45deg); }
+.more .checks { margin-top: 0; }
+.more .checks > .check-row:first-child { border-top: 1px solid var(--border); }
+
+/* ================== Ingredients & disclaimer ================== */
+.ingredients {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+.ingredients mark {
+  background: var(--mark-bg);
+  color: var(--danger);
+  font-weight: 800;
+  padding: 0 3px;
+  border-radius: 4px;
+}
+.icon-line {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.disclaimer {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 16px !important;
+}
+.disclaimer .lucide { margin-top: 2px; }
+
+/* ================== Settings toggles ================== */
+.chips {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+@media (min-width: 420px) {
+  .chips { grid-template-columns: 1fr 1fr; }
+}
+.chip {
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--control-border);
+  background: var(--card);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.chip:hover { background: var(--card-inset); }
+.chip-box {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1.5px solid var(--control-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.chip-box .lucide { width: 15px; height: 15px; stroke-width: 3; }
+.chip.on {
+  border-color: var(--accent-text);
+  background: var(--accent-soft);
+  font-weight: 800;
+}
+.chip.on .chip-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+/* ================== History ================== */
+.history {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+.history li + li { margin-top: 8px; }
+.history .empty { padding: 12px 0; }
+.history-item {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card-inset);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.history-item:hover { border-color: var(--control-border); }
+.history-item img,
+.history-item .noimg {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  flex: none;
+}
+.history-item .noimg { background: var(--card); }
+.history-item .info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.history-item .info b,
+.history-item .info .muted {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================== Bottom tab bar ================== */
+.tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--tab-bg);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.tabs-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  padding: 6px 8px;
+  gap: 4px;
+}
+.tabs button {
+  flex: 1;
+  min-height: 56px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.tabs button .lucide { width: 22px; height: 22px; }
+.tabs button.active {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  font-weight: 800;
+}
+
+/* ================== Motion (subtle, and off if the phone asks) ================== */
+.fade-in { animation: rise 0.28s ease-out both; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ================== Larger screens ================== */
+@media (min-width: 720px) {
+  html { font-size: 18px; }
+  .card { padding: 24px; }
+  .top { padding-top: 32px; }
+}
