@@ -293,7 +293,6 @@ img { max-width: 100%; }
   overflow: hidden;
   border: 1px solid var(--border);
 }
-#reader:empty { display: none; }
 
 /* ================== Status system (Yuka-inspired verdict + status pills) ==================
    safe = green check, caution = amber alert (may contain only),

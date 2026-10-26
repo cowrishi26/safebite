@@ -87,30 +87,33 @@
     $('result').innerHTML = '';
     $('scanBtn').hidden = true;
     $('stopBtn').hidden = false;
-    scanner = new Html5Qrcode('reader');
+    $('reader').hidden = false;
+    const formats = [
+      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
+    ];
+    scanner = new Html5Qrcode('reader', { formatsToSupport: formats });
     let found = false;   // the scanner can report the same barcode several times
-    try {
-      await scanner.start(
-        { facingMode: 'environment' },                       // back camera
-        {
-          fps: 10,
-          qrbox: { width: 280, height: 150 },                // wide box for barcodes
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
-          ],
-        },
-        code => {                                            // found a barcode
-          if (found || lookupsRunning) return;
-          found = true;
-          stopScan();
-          lookup(code);
-        },
-        () => {}                                             // no barcode in this frame: keep trying
-      );
-    } catch (e) {
+    const config = {
+      fps: 10,
+      qrbox: (w, h) => ({ width: Math.min(280, Math.floor(w * 0.85)), height: Math.min(150, Math.floor(h * 0.6)) }),
+      formatsToSupport: formats,
+    };
+    const onDecode = code => {                               // found a barcode
+      if (found || lookupsRunning) return;
+      found = true;
       stopScan();
-      alert('Could not open the camera. Allow camera access (the page must be https), or type the barcode number.');
+      lookup(code);
+    };
+    try {
+      await scanner.start({ facingMode: 'environment' }, config, onDecode, () => {});
+    } catch (e) {
+      try {
+        await scanner.start({ facingMode: 'user' }, config, onDecode, () => {});
+      } catch (e2) {
+        stopScan();
+        alert('Could not open the camera. Allow camera access (the page must be https), or type the barcode number.');
+      }
     }
   }
 
@@ -120,6 +123,7 @@
       try { scanner.clear(); } catch (e) {}
       scanner = null;
     }
+    $('reader').hidden = true;
     $('scanBtn').hidden = false;
     $('stopBtn').hidden = true;
   }
