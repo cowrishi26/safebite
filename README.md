@@ -1,4 +1,4 @@
-# SafeBite: food barcode scanner
+# ScanSafe: food barcode scanner
 
 Scan a packaged food's barcode and see its allergens, "may contain" warnings,
 diet compatibility, and a big **Safe / Not safe for you** banner based on your profile.
@@ -7,18 +7,23 @@ Product data comes from the free Open Food Facts database (no API key needed).
 ## Files
 
 ```
-safebite/
+scansafe/
 ├── index.html   The page: Scan, History, and Settings screens
 ├── style.css    Colors, fonts, and layout (change colors at the top)
 ├── rules.js     ALL allergen and diet logic and word lists (edit this to change detection)
 ├── app.js       Camera scanning, database lookup, drawing results, history, settings
+├── tests/
+│   └── rules.test.js  Checks the allergen and diet logic (run: node tests/rules.test.js)
 └── README.md    This file
 ```
 
+Your saved settings and history are stored under the old name (`safebite-...`)
+on purpose, so they keep working after the rename.
+
 ## 1. Open it in Antigravity
 
-1. Put all 5 files in one folder, e.g. `Documents\safebite`.
-2. In Antigravity: **File → Open Folder** → pick `safebite`.
+1. Put all the files (and the `tests` folder) in one folder, e.g. `Documents\scansafe`.
+2. In Antigravity: **File → Open Folder** → pick `scansafe`.
 
 ## 2. Try it on your computer
 
@@ -37,10 +42,10 @@ On a laptop, type a barcode number in the box instead of scanning. Test numbers:
 
 Phone cameras only work on **https** pages, so use free GitHub Pages:
 
-1. Go to github.com → **+** (top right) → **New repository** → name `safebite` → **Public** → **Create repository**.
-2. Click **uploading an existing file**, drag in all 5 files, click **Commit changes**.
+1. Go to github.com → **+** (top right) → **New repository** → name `scansafe` → **Public** → **Create repository**.
+2. Click **uploading an existing file**, drag in all the files and the `tests` folder, click **Commit changes**.
 3. Go to **Settings → Pages**. Under Branch pick **main** and **/ (root)** → **Save**.
-4. Wait 1–2 minutes, refresh. Your link appears: `https://YOUR-USERNAME.github.io/safebite/`
+4. Wait 1–2 minutes, refresh. Your link appears: `https://YOUR-USERNAME.github.io/scansafe/`
 
 ## 4. Test on your phone
 

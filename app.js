@@ -32,6 +32,7 @@
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* storage blocked */ }
   }
 
+  // The storage keys keep the app's old name (SafeBite) so saved data still loads.
   let profile = load('safebite-profile', {});
   profile = { allergies: profile.allergies || [], diets: profile.diets || [] };
 
@@ -264,11 +265,11 @@
       ? `<p>Pick your allergies and diets in <a href="#" data-go="settings">Settings</a> to get a personal check.</p>`
       : `<ul>${v.reasons.map(r => `<li>${formatReason(r)}</li>`).join('')}</ul>`;
     let html = `<div class="status-card big ${v.level}" role="status">
-        <span class="status-icon"><i data-lucide="${b.icon}" aria-hidden="true"></i></span>
-        <div>
+        <div class="status-head">
+          <span class="status-icon"><i data-lucide="${b.icon}" aria-hidden="true"></i></span>
           <div class="status-title">${b.title}</div>
-          ${reasons}
         </div>
+        <div class="status-body">${reasons}</div>
       </div>`;
 
     // 2) Product name, brand, photo
