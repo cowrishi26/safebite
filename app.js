@@ -140,7 +140,7 @@
       return;
     }
     $('result').innerHTML =
-      '<div class="card"><p>Looking up <span class="mono">' + esc(code) + '</span>...</p></div>';
+      '<div class="sheet"><div class="sheet-section"><p>Looking up <span class="mono">' + esc(code) + '</span>...</p></div></div>';
 
     let data = null;
     lookupsRunning++;
@@ -189,24 +189,26 @@
     };
   }
 
-  // Friendly "not found" / error card, with manual entry and try-again
+  // Friendly "not found" / error sheet, with manual entry and try-again
   function showNotFound(code, message, icon) {
     $('result').innerHTML = `
-      <div class="card fade-in">
-        <div class="status-card unknown" role="status">
-          <span class="status-icon"><i data-lucide="${icon || 'search-x'}" aria-hidden="true"></i></span>
-          <div>
-            <div class="status-title">We couldn't find that</div>
-            <p>${esc(message)}</p>
+      <div class="sheet">
+        <div class="sheet-section">
+          <div class="status-card unknown" role="status">
+            <span class="status-icon"><i data-lucide="${icon || 'search-x'}" aria-hidden="true"></i></span>
+            <div>
+              <div class="status-title">We couldn't find that</div>
+              <p>${esc(message)}</p>
+            </div>
           </div>
+          ${code ? `<p class="muted" style="margin-top: 12px;">Barcode: <span class="mono">${esc(code)}</span></p>` : ''}
+          <label class="field-label" for="retryInput">Barcode number</label>
+          <div class="row">
+            <input id="retryInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Type barcode number" value="${esc(code)}">
+            <button class="btn btn-check" id="retryLookup">Check</button>
+          </div>
+          <button class="btn btn-secondary" id="retryScan"><i data-lucide="scan-barcode" aria-hidden="true"></i> Try scanning again</button>
         </div>
-        ${code ? `<p class="muted">Barcode: <span class="mono">${esc(code)}</span></p>` : ''}
-        <label class="field-label" for="retryInput">Barcode number</label>
-        <div class="row">
-          <input id="retryInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Type barcode number" value="${esc(code)}">
-          <button class="btn btn-check" id="retryLookup">Check</button>
-        </div>
-        <button class="btn btn-secondary" id="retryScan"><i data-lucide="scan-barcode" aria-hidden="true"></i> Try scanning again</button>
       </div>`;
     refreshIcons();
     $('retryLookup').onclick = () => lookup($('retryInput').value);
@@ -243,10 +245,10 @@
   }
 
   // One row in the allergen or diet list
-  function checkRow(label, reason, st, mineText) {
+  function checkRow(label, reason, st, isMine) {
     return `<li class="check-row">
         <div class="check-main">
-          <span class="check-name">${esc(label)}${mineText ? ` <span class="mine-tag">${mineText}</span>` : ''}</span>
+          <span class="check-name">${esc(label)}${isMine ? '<span class="mine-note">(yours)</span>' : ''}</span>
           <span class="check-reason">${formatReason(reason)}</span>
         </div>
         ${pill(st.level, st.word)}
@@ -260,7 +262,7 @@
     const text = R.ingredientsText(p);
     const b = STATUS[v.level];
 
-    // 1) Big status badge
+    // 1) Big status verdict (largest element on the screen)
     const reasons = v.level === 'none'
       ? `<p>Pick your allergies and diets in <a href="#" data-go="settings">Settings</a> to get a personal check.</p>`
       : `<ul>${v.reasons.map(r => `<li>${formatReason(r)}</li>`).join('')}</ul>`;
@@ -272,8 +274,10 @@
         <div class="status-body">${reasons}</div>
       </div>`;
 
-    // 2) Product name, brand, photo
-    html += `<div class="card product">
+    // 2) Unified product sheet (Yuka + Nutrition-Facts hierarchy: product header, allergens, diets, ingredients)
+    html += `<div class="sheet">`;
+
+    html += `<div class="sheet-section product">
         ${p.image ? `<img src="${esc(p.image)}" alt="Photo of ${esc(p.name)}">`
                   : '<div class="noimg"><i data-lucide="package" aria-hidden="true"></i></div>'}
         <div class="product-info">
@@ -289,9 +293,8 @@
     const mine = R.ALLERGENS.filter(isMine);
     const other = R.ALLERGENS.filter(a => !isMine(a) && found(a));
     const rest = R.ALLERGENS.filter(a => !isMine(a) && !found(a));
-    const allergenRow = a => checkRow(cap(a.name), al[a.id].reason, ALLERGEN_STATUS[al[a.id].status],
-                                      isMine(a) ? 'Your allergy' : '');
-    html += `<div class="card"><h2>Allergens</h2>`;
+    const allergenRow = a => checkRow(cap(a.name), al[a.id].reason, ALLERGEN_STATUS[al[a.id].status], isMine(a));
+    html += `<div class="sheet-section"><h2>Allergens</h2>`;
     if (mine.length || other.length) {
       html += `<ul class="checks">${[...mine, ...other].map(allergenRow).join('')}</ul>`;
     }
@@ -308,25 +311,24 @@
     // 4) Diets: your diets first
     const dietMine = d => profile.diets.includes(d.id);
     const dietOrder = [...R.DIETS.filter(dietMine), ...R.DIETS.filter(d => !dietMine(d))];
-    html += `<div class="card"><h2>Diets</h2><ul class="checks">`;
-    html += dietOrder.map(d => checkRow(d.label, diets[d.id].reason, DIET_STATUS[diets[d.id].status],
-                                         dietMine(d) ? 'Your diet' : '')).join('');
+    html += `<div class="sheet-section"><h2>Diets</h2><ul class="checks">`;
+    html += dietOrder.map(d => checkRow(d.label, diets[d.id].reason, DIET_STATUS[diets[d.id].status], dietMine(d))).join('');
     html += `</ul></div>`;
 
     // 5) Full ingredients, with allergen words highlighted
-    html += `<div class="card"><h2>Ingredients</h2>`;
+    html += `<div class="sheet-section"><h2>Ingredients</h2>`;
     if (text) {
       html += `<p class="ingredients">${highlight(text, R.allergenMatches(p, al))}</p>`;
     } else {
       html += `<p class="muted icon-line"><i data-lucide="circle-help" aria-hidden="true"></i> No ingredient list in the database. Read the package label.</p>`;
     }
-    html += `</div>`;
+    html += `</div></div>`;
 
     // 6) Disclaimer + next scan
-    html += `<div class="card">
+    html += `<div class="result-footer">
         <p class="disclaimer"><i data-lucide="info" aria-hidden="true"></i>
-          <span>Always check the package label. Data comes from a community database and may be incomplete.</span></p>
-        <button class="btn btn-primary btn-big" id="scanAgain"><i data-lucide="scan-barcode" aria-hidden="true"></i> Scan another</button>
+          <span>Always read the package label before eating. Data comes from volunteers and can be incomplete.</span></p>
+        <button class="btn btn-primary btn-big" id="scanAgain"><i data-lucide="scan-barcode" aria-hidden="true"></i> Scan another barcode</button>
       </div>`;
 
     $('result').innerHTML = `<div class="fade-in">${html}</div>`;
