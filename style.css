@@ -438,7 +438,7 @@ img { max-width: 100%; }
 }
 .check-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-height: 48px;
