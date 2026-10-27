@@ -11,7 +11,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Nunito:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
+  <!-- WebAssembly ZBar BarcodeDetector polyfill (makes 1D barcode scanning work on iOS Safari & desktop browsers) -->
+  <script src="https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.9.15/dist/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@undecaf/barcode-detector-polyfill@0.9.21/dist/index.js"></script>
   <!-- Barcode scanning library (reads UPC/EAN barcodes from the camera) -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <!-- Lucide icons (pinned version: never use @latest, icon names can change) -->
@@ -110,7 +113,7 @@
   </nav>
 
   <!-- Load order matters: rules first, then the app -->
-  <script src="rules.js?v=3"></script>
-  <script src="app.js?v=3"></script>
+  <script src="rules.js?v=4"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

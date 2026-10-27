@@ -74,8 +74,12 @@
   }
 
   // ---------------------------------------------------------------
-  // Camera barcode scanning (html5-qrcode library)
+  // Camera barcode scanning (html5-qrcode + ZBar WASM BarcodeDetector)
   // ---------------------------------------------------------------
+  if (!('BarcodeDetector' in window) && typeof barcodeDetectorPolyfill !== 'undefined') {
+    window.BarcodeDetector = barcodeDetectorPolyfill.BarcodeDetectorPolyfill;
+  }
+
   let scanner = null;
 
   async function startScan() {
@@ -97,7 +101,7 @@
       formatsToSupport: formats,
       experimentalFeatures: { useBarCodeDetectorIfSupported: true },
     });
-    // Enable ZXing TRY_HARDER so 1D barcodes don't have to be dead-center
+    // Enable ZXing TRY_HARDER as backup
     const decoders = [scanner.qrcode && scanner.qrcode.primaryDecoder, scanner.qrcode && scanner.qrcode.secondaryDecoder];
     decoders.forEach(d => {
       if (d && d.hints && typeof d.hints.entries === 'function') {
@@ -106,10 +110,34 @@
         }
       }
     });
-    // Keep full camera resolution in the scan canvas instead of downscaling to 280x150 CSS pixels
-    scanner.foreverScan = function ( scanConfig, onSuccess, onError ) {
+
+    // Full-frame hardware / ZBar WASM detector scans the entire camera feed at native resolution
+    let fullFrameDetector = null;
+    if ('BarcodeDetector' in window) {
+      try {
+        fullFrameDetector = new window.BarcodeDetector({
+          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'],
+        });
+      } catch (e) {}
+    }
+
+    scanner.foreverScan = function (scanConfig, onSuccess, onError) {
       if (!this.shouldScan || !this.renderedCamera || !this.qrRegion) return;
       const video = this.renderedCamera.getSurface();
+      const next = () => {
+        if (!this.shouldScan) return;
+        this.foreverScanTimeout = setTimeout(() => this.foreverScan(scanConfig, onSuccess, onError), this.getTimeoutFps(scanConfig.fps));
+      };
+      if (fullFrameDetector && video.readyState >= 2 && video.videoWidth > 0) {
+        fullFrameDetector.detect(video).then(barcodes => {
+          if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+            onSuccess(barcodes[0].rawValue);
+          } else {
+            next();
+          }
+        }).catch(() => next());
+        return;
+      }
       if (video.videoWidth && video.clientWidth) {
         const scaleX = video.videoWidth / video.clientWidth;
         const scaleY = video.videoHeight / video.clientHeight;
@@ -121,15 +149,12 @@
         if (this.canvasElement.height !== srcH) this.canvasElement.height = srcH;
         this.context.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
       }
-      const next = () => {
-        this.foreverScanTimeout = setTimeout(() => this.foreverScan(scanConfig, onSuccess, onError), this.getTimeoutFps(scanConfig.fps));
-      };
       this.scanContext(onSuccess, onError).finally(next);
     };
 
     let found = false;   // the scanner can report the same barcode several times
     const makeConfig = facingMode => ({
-      fps: 12,
+      fps: 15,
       disableFlip: true,
       qrbox: (w, h) => ({ width: Math.min(320, Math.floor(w * 0.88)), height: Math.min(170, Math.floor(h * 0.65)) }),
       formatsToSupport: formats,
@@ -153,8 +178,18 @@
       } catch (e2) {
         stopScan();
         alert('Could not open the camera. Allow camera access (the page must be https), or type the barcode number.');
+        return;
       }
     }
+    // Enable continuous autofocus on phones that support it
+    try {
+      const video = $('reader').querySelector('video');
+      const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
+      const caps = track && track.getCapabilities ? track.getCapabilities() : {};
+      if (caps.focusMode && caps.focusMode.includes('continuous')) {
+        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      }
+    } catch (e) {}
   }
 
   async function stopScan() {
